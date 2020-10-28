@@ -55,6 +55,7 @@ external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = Dash(__name__, external_stylesheets=external_stylesheets, 
            title='Marker Labelling GUI', update_title='GUI UPDATING...')
 
+server = app.server
 # Define Layout
 app.layout = html.Div(
     [
