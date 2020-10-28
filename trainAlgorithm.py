@@ -101,5 +101,5 @@ with open(os.path.join(fld,'training_stats_' + date.today().strftime("%Y-%m-%d")
     pickle.dump(running_loss,f)
 torch.save(net.state_dict(),os.path.join(fld,'model_'+ date.today().strftime("%Y-%m-%d") + '.ckpt'))  
     
-print('Model saved to %s' % fld)
+print('Model saved to %s' % os.path.realpath(fld))
 print('Algorithm trained in %s' % (time.time() - t0))

@@ -60,7 +60,7 @@ def marker_label(pts,modelpath,trainvalpath,markersetpath,fs,windowSize):
         trainingvals = pickle.load(f)
     segdists = trainingvals['segdists']
     scaleVals = trainingvals['scaleVals']
-    max_len = 240 #trainingvals['max_len']
+    max_len = trainingvals['max_len']
     
     pts = np.array(pts,dtype=np.float64)
     
