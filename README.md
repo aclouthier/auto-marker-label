@@ -37,7 +37,9 @@ Note that this may take a long time to run (ie. hours - days). Training time can
   - Clicking and dragging rotates, the scroll wheel zooms, and right clicking translates the plot. Hovering over a marker displays the marker number, label, and coordinates.
   - The slider at the bottom can be used to view different time frames. After clicking the slider, the left and right arrow keys can be used to adjust the timeframe as well.
   - The type of marker visualization can be selected from the *Visualization* dropdown menu. *Confidence* colours the markers based on the confidence in the predicted label. *Unlabelled* highlights unlabelled markers in red. *Segments* displays markers attached to the same body segment in the same colour.
-  - The * *Error Detection* * box lists unlabelled markers and duplicated labels. The time frames where the error was detected are displayed. Note that the listed marker is guaranteed to be visible for the first and last frames, but may be missing from the intermediate frames of the listed range.
+  - The *Error Detection* box lists unlabelled markers and duplicated labels. The time frames where the error was detected are displayed. Note that the listed marker is guaranteed to be visible for the first and last frames, but may be missing from the intermediate frames of the listed range.
 - Correct incorrect labels using the *Marker Label Modifier*. Type the number for the marker to change the label and select the desired label from the dropdown then click the *Submit* button. To leave a marker unlabelled, leave the dropdown menu blank (this can be cleared by clicking the 'x').
 - Export a labelled version of the .c3d file by clicking the *Export to C3D* button. This will rotate the data back to the original orientation and fill small gaps through cubic spline interpolation. Unlablled markers will not be exported.
 - Before loading a new c3d file, click the *Refresh Settings* button.
+
+![Marker Labelling GUI](/images/auto-marker-label-GUI.jpg)
