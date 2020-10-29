@@ -2,6 +2,8 @@
 
 An algorithm that uses machine learning to automatically label optical motion capture markers. The algorithm can be trained on existing data or simulated marker trajectories. Data and code is provided to generate the simulated trajectories for custom marker sets.
  
+![Marker Labelling GUI](/images/auto-marker-label-GUI.jpg) 
+ 
 ### Generate Simulated Trajectories
 If you do not have existing labelled motion capture data to train the algorithm, simulated trajectories can be generated. 
 
@@ -42,4 +44,7 @@ Note that this may take a long time to run (ie. hours - days). Training time can
 - Export a labelled version of the .c3d file by clicking the *Export to C3D* button. This will rotate the data back to the original orientation and fill small gaps through cubic spline interpolation. Unlablled markers will not be exported.
 - Before loading a new c3d file, click the *Refresh Settings* button.
 
-![Marker Labelling GUI](/images/auto-marker-label-GUI.jpg)
+### Transfer Learning
+- As data is collected, labelled, and corrected, it can be added to the training set through transfer learning to improve the algorithm
+- In **transferLearning.py**, set the path for the trained model and training values to build on (.ckpt and .pickle file) and the folder containing the .c3d files to add to the training set. Set the markers used to align the data. Ideally, these will be a marker on the left and right side of the torso or head (eg. right and left acromions).
+- Run **transferLearning.py**
