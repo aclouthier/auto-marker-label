@@ -6,10 +6,8 @@ trainAlgorithm.py
 
 Use this script to train the marker labelling algorithm on existing labelled c3d files
 or simulated marker trajectories created using generateSimTrajectories.py.
-
-Please cite: 
     
-@author: aclouthi@uottawa.ca
+@author: aclouthi
 """
 
 import os

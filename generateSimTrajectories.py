@@ -7,9 +7,7 @@ based marker labelling algorithm. Trajectories are generated based on the define
 OpenSim (https://simtk.org/projects/opensim) marker set using body kinematics
 for up to 100 participants performing a series of athletic movements.
 
-Please cite:
-
-@author: aclouthi@uottawa.ca
+@author: aclouthi
 """
 
 import os

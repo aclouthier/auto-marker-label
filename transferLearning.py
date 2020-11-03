@@ -5,7 +5,7 @@ Created on Wed Oct 21 10:11:16 2020
 Use this script to perform transfer learning. Requires a previously trained model and
 labelled c3d files to add to training set.
 
-@author: aclouthi@uottawa.ca
+@author: aclouthi
 """
 
 import os
@@ -16,24 +16,24 @@ import pickle
 import numpy as np
 import torch
 
-import import_functions as fio 
-import functions_training as ftrain
+import functions.import_functions as iof 
+import functions.nn_functions as nnf
 
 # ---- INPUT PARAMETERS ---- #
 
-fs = 240 # Sampling frequency of training data
 num_epochs = 10 # Number of epochs to train for
 # Path for save location of trained model
-fld = 'C:\\Users\\aclouthi\\Documents\\Motus\\AutoMarkerLabel\\Manuscript\\Code\\data'
+fld = os.path.join('.','data')
 # Path to folder containing labelled .c3d files to add to training set
-datapath = os.path.join(fld,'transfer_learning_data')
+datapath = os.path.join('.','data','transfer_learning_data')
 # Path to a .ckpt file of a previously trained neural network to use as base for transfer learning
-modelpath = os.path.join(fld,'model_2020-08-01.ckpt')
+modelpath = os.path.join('.','data','model_2020-10-27.ckpt')
 # Path to training values from previously trained algorithm. 
 # Should match the model used in modelpath.
-trainvalpath = os.path.join(fld,'trainvals_2020-08-01.pickle')
+trainvalpath = os.path.join('.','data','trainingvals_2020-10-27.pickle')
 # Path to .xml file of OpenSim marker set
-markersetpath = os.path.join(fld,'MarkerSet.xml')
+markersetpath = os.path.join('.','data','MarkerSet.xml')
+windowSize = 120 # size of windows used to segment data for algorithm
 # Markers to use to align person such that they face +x. Suggest acromions or pelvis markers.
 alignMkR = 'RAC'
 alignMkL = 'LAC'
@@ -44,11 +44,11 @@ alignMkL = 'LAC'
 t0 = time.time()
 
 # Read marker set
-markers, segment, uniqueSegs, segID, num_mks = fio.import_markerSet(markersetpath)
+markers, segment, uniqueSegs, segID, _, num_mks = iof.import_markerSet(markersetpath)
 
 # Load c3d files
 filelist = glob.glob(os.path.join(datapath,'*.c3d'))
-data_segs, windowIdx = fio.import_c3ds(filelist)
+data_segs, windowIdx = iof.import_labelled_c3ds(filelist,markers,alignMkR,alignMkL,windowSize)
 
 # Load scale values and intra-segment distances
 with open(trainvalpath,'rb') as f:
@@ -58,7 +58,7 @@ scaleVals = trainingvals['scaleVals']
 max_len = trainingvals['max_len']
 
 # Perform transfer learning
-net, running_loss = ftrain.train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,
+net, running_loss = nnf.train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,
                                     num_epochs,modelpath)
   
         

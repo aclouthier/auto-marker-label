@@ -133,6 +133,8 @@ def window_data(data_segs,windowSize,num_mks):
     windowIdx = []
     for t in range(len(data_segs)):
         pts = data_segs[t]
+        if torch.is_tensor(pts):
+            pts = pts.numpy()
         for m in range(num_mks):
             # only include if it's not all nans
             if len(np.where(~np.isnan(pts[:,m,0]))[0]) > 0: 
@@ -143,7 +145,7 @@ def window_data(data_segs,windowSize,num_mks):
                     else:
                         i2 = pts.shape[0]
                     while i1 <= i2:
-                        if i2 - i1 < 12 or i1 + windowSize > i2:
+                        if (i2 - (i1+windowSize) < 12) or (i1 + windowSize > i2):
                             if i2 - i1 > 0:
                                 windowIdx.append([t,m,i1,i2])
                             if  (~np.isnan(pts[i2:,m,0])).sum() > 1: # any more visible markers?
@@ -157,7 +159,7 @@ def window_data(data_segs,windowSize,num_mks):
 
 
 
-def import_labelled_c3ds(filelist,markers,alignMkR,alignMkL,fs,windowSize):
+def import_labelled_c3ds(filelist,markers,alignMkR,alignMkL,windowSize):
     '''
     Import c3d files for training, sort markers to match marker set order, 
     filter data, rotate data such that person faces +x, and determine window 
@@ -195,6 +197,7 @@ def import_labelled_c3ds(filelist,markers,alignMkR,alignMkL,fs,windowSize):
         # Import c3d and reorder points according to marker set order
         c3ddat = c3d(trial)
         alllabels = c3ddat['parameters']['POINT']['LABELS']['value']
+        fs = c3ddat['parameters']['POINT']['RATE']['value']
         pts = np.nan * np.ones((c3ddat['data']['points'].shape[2],num_mks,3))
         for i in range(c3ddat['data']['points'].shape[1]):
             j = [ii for ii,x in enumerate(markers) if x in alllabels[i]]
