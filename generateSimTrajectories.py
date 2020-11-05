@@ -23,12 +23,12 @@ import functions.import_functions as io
 # ----------------------------- PARAMETERS ---------------------------------- #
 # --------------------------------------------------------------------------- #
 
-# Path for save location of trained model
-fld = os.path.join('.','data')
+# Path to .hdf5 file containing body kinematics of training data
+bodykinpath = os.path.join('.','data','bodykinematics.hdf5')
 # Path to .xml file of OpenSim marker set
-markersetpath = os.path.join(fld,'MarkerSet.xml')
+markersetpath = os.path.join('.','data','MarkerSet.xml')
 # Path to save .pickle file of training data
-outputfile = os.path.join(fld,'simulatedTrajectories.pickle')
+outputfile = os.path.join('.','data','simulatedTrajectories.pickle')
 
 # Markers to use to align person such that they face +x. Suggest acromions or pelvis markers.
 alignMkR = 'RAC'
@@ -42,7 +42,7 @@ max_len = 240 # Max length of data segments
 # Read marker set
 markers, segment, uniqueSegs, segID, mkcoordL, num_mks = io.import_markerSet(markersetpath)
 
-hf = h5py.File(os.path.join(fld,'bodykinematics.hdf5'),'r')
+hf = h5py.File(bodykinpath,'r')
 
 # Get body segment scaling and centre of mass
 com = {}

@@ -112,6 +112,7 @@ app.layout = html.Div(
                             placeholder=path,
                             debounce=True,
                             size=35,
+                            persistence=True,
                             style={'width': '100%','margin-bottom':'5px'})),
                         width=6)
                     ]),
@@ -234,6 +235,7 @@ app.layout = html.Div(
         dbc.Row(dbc.Col(html.Div(id='sorted_confidence'), style={'display': 'none'})),
         dbc.Row(dbc.Col(html.Div(id='c3dlist'), style={'display': 'none'})),
         dbc.Row(dbc.Col(html.Div(id='filename'), style={'display': 'none'})),
+        dbc.Row(dbc.Col(html.Div(id='rawlabels'), style={'display': 'none'})),
     ]
     )
 
@@ -276,8 +278,8 @@ def submit_filename(n_clicks,filename):
 #Load data 
 @app.callback(
     [Output('outputdata','children'),Output('pts_c3d','children'),
-     Output('frame_rate', 'children'), Output('Time_Slider','max'),
-     Output('Time_Slider', 'marks')],
+     Output('frame_rate', 'children'),Output('Time_Slider','max'),
+     Output('Time_Slider', 'marks'),Output('rawlabels','children')],
     [Input('rotang', 'children'),Input('load_data_button','n_clicks')],
     [State('upload_data','value')])
 
@@ -288,6 +290,7 @@ def load_data(angle,n_clicks,filename):
     fs=''
     max_slider=''
     marks=''
+    labels = ''
 
     if angle is None:
         angle=0
@@ -300,7 +303,7 @@ def load_data(angle,n_clicks,filename):
     
             # angle=0+int(angle)
             angle=float(angle)
-            pts_c3d, fs = iof.import_raw_c3d(filename, angle)
+            pts_c3d, fs, labels = iof.import_raw_c3d(filename, angle)
             
             pts = np.array(pts_c3d, dtype=np.float64)
             
@@ -323,16 +326,16 @@ def load_data(angle,n_clicks,filename):
         else:
             outputdata = 'ERROR: file not found \n%s' % (filename)
 
-    return outputdata, pts, fs, max_slider, marks;
+    return outputdata, pts, fs, max_slider, marks, labels
 
 # Label Data
 @app.callback([Output('labels_c3d', 'children'), Output('confidence_c3d', 'children'), 
                Output('body_segment', 'children'), Output('label_comment', 'children')],
               [Input('load_button', 'n_clicks'), Input('pts_c3d', 'children'),
-               Input('frame_rate', 'children')],  
+               Input('frame_rate', 'children'),Input('rawlabels','children')],  
               [State('upload_data', 'value')])
 
-def label_data(n_clicks, pts, fs, filename):
+def label_data(n_clicks, pts, fs, rawlabels, filename):
         
     labels=''
     confidence=''
@@ -344,7 +347,7 @@ def label_data(n_clicks, pts, fs, filename):
         pts=np.array(pts)
         
         if n_clicks is None:
-            labels= [0]*(len(pts[0,:,0]))
+            labels= rawlabels #[0]*(len(pts[0,:,0]))
             confidence= [0]*(len(pts[0,:,0]))
             body_segment=None
             comment="Labels not assigned"

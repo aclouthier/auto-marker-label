@@ -178,8 +178,6 @@ def import_labelled_c3ds(filelist,markers,alignMkR,alignMkL,windowSize):
     alignMkL : string
         name of marker to use to rotate data on LEFT side of body,
         set to None if rotation is not needed
-    fs : int
-        Sampling frequency used in .c3d files
     windowSize : int
         desired size of windows
 
@@ -197,7 +195,7 @@ def import_labelled_c3ds(filelist,markers,alignMkR,alignMkL,windowSize):
         # Import c3d and reorder points according to marker set order
         c3ddat = c3d(trial)
         alllabels = c3ddat['parameters']['POINT']['LABELS']['value']
-        fs = c3ddat['parameters']['POINT']['RATE']['value']
+        fs = c3ddat['parameters']['POINT']['RATE']['value'][0]
         pts = np.nan * np.ones((c3ddat['data']['points'].shape[2],num_mks,3))
         for i in range(c3ddat['data']['points'].shape[1]):
             j = [ii for ii,x in enumerate(markers) if x in alllabels[i]]
@@ -262,39 +260,41 @@ def import_raw_c3d(file,rotang):
     c3ddat = c3d(file) # read in c3d file
     rawpts = c3ddat['data']['points'][0:3,:,:].transpose((2,1,0)) # Get points from c3d file
     fs = c3ddat['parameters']['POINT']['RATE']['value'] # sampling frequency
+    rawlabels = c3ddat['parameters']['POINT']['LABELS']['value']
     
-    # Try to find and fix places where the markers swap indices
-    thresh = 20
-    for m in range(rawpts.shape[1]):
-        kf = np.where(np.isnan(rawpts[1:,m,0]) != np.isnan(rawpts[0:-1,m,0]))[0]
-        if ~np.isnan(rawpts[0,m,0]):
-            kf = np.insert(kf,0,-1,axis=0)
-        if ~np.isnan(rawpts[-1,m,0]):
-            kf = np.concatenate((kf,[rawpts.shape[0]-1]))
-        kf = np.reshape(kf,(-1,2))
-        k = 0
-        while k < kf.shape[0]-1:
-            d = np.linalg.norm(rawpts[kf[k+1,0]+1,m,:] - rawpts[kf[k,1],m,:])
-            all_d = np.linalg.norm(rawpts[kf[k,1]+1,:,:] - rawpts[kf[k,1],m,:],axis=1)
-            all_d[m] = np.nan
-            if (~np.isnan(all_d)).sum() > 0:
-                if d > np.nanmin(all_d) and np.nanmin(all_d) < thresh and \
-                        np.isnan(rawpts[kf[k,1],np.nanargmin(all_d),0]):
-                    dummy = rawpts[kf[k,1]+1:,m,:].copy()
-                    rawpts[kf[k,1]+1:,m,:] = rawpts[kf[k,1]+1:,np.nanargmin(all_d),:]
-                    rawpts[kf[k,1]+1:,np.nanargmin(all_d),:] = dummy.copy()
+    # # Try to find and fix places where the markers swap indices
+    # thresh = 20
+    # for m in range(rawpts.shape[1]):
+    #     kf = np.where(np.isnan(rawpts[1:,m,0]) != np.isnan(rawpts[0:-1,m,0]))[0]
+    #     if ~np.isnan(rawpts[0,m,0]):
+    #         kf = np.insert(kf,0,-1,axis=0)
+    #     if ~np.isnan(rawpts[-1,m,0]):
+    #         kf = np.concatenate((kf,[rawpts.shape[0]-1]))
+    #     kf = np.reshape(kf,(-1,2))
+    #     k = 0
+    #     while k < kf.shape[0]-1:
+    #         d = np.linalg.norm(rawpts[kf[k+1,0]+1,m,:] - rawpts[kf[k,1],m,:])
+    #         all_d = np.linalg.norm(rawpts[kf[k,1]+1,:,:] - rawpts[kf[k,1],m,:],axis=1)
+    #         all_d[m] = np.nan
+    #         if (~np.isnan(all_d)).sum() > 0:
+    #             if d > np.nanmin(all_d) and np.nanmin(all_d) < thresh and \
+    #                     np.isnan(rawpts[kf[k,1],np.nanargmin(all_d),0]):
+    #                 dummy = rawpts[kf[k,1]+1:,m,:].copy()
+    #                 rawpts[kf[k,1]+1:,m,:] = rawpts[kf[k,1]+1:,np.nanargmin(all_d),:]
+    #                 rawpts[kf[k,1]+1:,np.nanargmin(all_d),:] = dummy.copy()
                     
-                    kf = np.where(np.isnan(rawpts[1:,m,0]) != np.isnan(rawpts[0:-1,m,0]))[0]
-                    if ~np.isnan(rawpts[0,m,0]):
-                        kf = np.insert(kf,0,0,axis=0)
-                    if ~np.isnan(rawpts[-1,m,0]):
-                        kf = np.concatenate((kf,[rawpts.shape[0]-1]))
-                    kf = np.reshape(kf,(-1,2))
-            k = k+1
+    #                 kf = np.where(np.isnan(rawpts[1:,m,0]) != np.isnan(rawpts[0:-1,m,0]))[0]
+    #                 if ~np.isnan(rawpts[0,m,0]):
+    #                     kf = np.insert(kf,0,0,axis=0)
+    #                 if ~np.isnan(rawpts[-1,m,0]):
+    #                     kf = np.concatenate((kf,[rawpts.shape[0]-1]))
+    #                 kf = np.reshape(kf,(-1,2))
+    #         k = k+1
             
     # Wherever there is a gap, check if the marker jumps further than the distance to the 
     # next closest marker. If so, split it into a new trajectory.
     pts = np.empty((rawpts.shape[0],0,3))
+    labels = []
     for m in range(rawpts.shape[1]):    
         # key frames where the marker appears or disappears  
         kf = np.where(np.isnan(rawpts[1:,m,0]) != np.isnan(rawpts[0:-1,m,0]))[0]
@@ -326,6 +326,7 @@ def import_raw_c3d(file,rotang):
                 traj = np.nan * np.ones((rawpts.shape[0],1,3))
                 traj[i1+1:kf[k-1,1]+1,0,:] = rawpts[i1+1:kf[k-1,1]+1,m,:] 
                 pts = np.append(pts,traj,axis=1)
+                labels.append(rawlabels[m])
                 
 
     # Angle to rotate points about z-axis
@@ -336,4 +337,4 @@ def import_raw_c3d(file,rotang):
     for i in range(pts.shape[1]):
         pts[:,i,:] = np.matmul(Ralign,pts[:,i,:].transpose()).transpose()
                 
-    return pts, fs
+    return pts, fs, labels
