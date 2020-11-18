@@ -14,8 +14,7 @@ import webbrowser
 import logging
 import glob
 
-import functions.import_functions as iof 
-import functions.label_functions as lf
+import automarkerlabel as aml
 
 path=os.path.dirname(os.path.abspath(__file__)) # get current path to use as default
 
@@ -48,7 +47,7 @@ class NumpyArrayEncoder(JSONEncoder):
 c3dlist = glob.glob(os.path.join(path,'*.c3d'))
 
 # Read marker set
-markers, segment, uniqueSegs, segID, _, num_mks = iof.import_markerSet(markersetpath)
+markers, segment, uniqueSegs, segID, _, num_mks = aml.import_markerSet(markersetpath)
 
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -303,7 +302,7 @@ def load_data(angle,n_clicks,filename):
     
             # angle=0+int(angle)
             angle=float(angle)
-            pts_c3d, fs, labels = iof.import_raw_c3d(filename, angle)
+            pts_c3d, fs, labels = aml.import_raw_c3d(filename, angle)
             
             pts = np.array(pts_c3d, dtype=np.float64)
             
@@ -354,7 +353,7 @@ def label_data(n_clicks, pts, fs, rawlabels, filename):
         elif n_clicks is not None:        
             print('finding labels and confidence scores')
 
-            labels_c3d, confidence_c3d,_ = lf.marker_label(pts,modelpath,trainvalpath,
+            labels_c3d, confidence_c3d,_ = aml.marker_label(pts,modelpath,trainvalpath,
                                                            markersetpath,fs,windowSize)
             print('done labelling')
             labels=np.array(labels_c3d)
@@ -631,7 +630,7 @@ def export_c3d(n_clicks, pts, labels, confidence, fs, rotang, filename):
             pts=np.array(pts).astype('float64') 
             rotang = float(rotang) * np.pi/180 
             
-            lf.export_labelled_c3d(pts,labels,rotang,filename,output_name,markers,gapfillsize)
+            aml.export_labelled_c3d(pts,labels,rotang,filename,output_name,markers,gapfillsize)
 
             export_comment="exported " + output_name.split(os.path.sep)[-1]
   
