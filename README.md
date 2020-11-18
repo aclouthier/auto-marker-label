@@ -5,8 +5,8 @@ An algorithm that uses machine learning to automatically label optical motion ca
 ![Marker Labelling GUI](/images/auto-marker-label-GUI.jpg) 
  
 ## Installation
-This code has been tested using Python 3.7. The following packages are required and can be installed using pip. The version used in testing is listed. See requirements.txt for the full list.
-
+This code has been tested using Python 3.7. The following packages are required and can be installed using pip. The version used in testing is listed. See requirements.txt for the full list of versions tested.
+```
 dash==1.14.0
 dash-bootstrap-components==0.10.3
 dash-core-components==1.10.2
@@ -17,9 +17,10 @@ pandas==1.0.5
 plotly==4.9.0
 scipy==1.5.2
 torch==1.5.1
-
+```
 [ezc3d](https://github.com/pyomeca/ezc3d) is also required and can be installed using conda
-'conda install -c conda-forge ezc3d'
+
+`conda install -c conda-forge ezc3d`
 
 ## Use
 ### Generate Simulated Trajectories
