@@ -9,8 +9,6 @@ This code has been tested using Python 3.7. The following packages are required 
 ```
 dash==1.14.0
 dash-bootstrap-components==0.10.3
-dash-core-components==1.10.2
-dash-html-components==1.0.3
 mydcc==0.1.22
 numpy==1.19.1
 pandas==1.0.5

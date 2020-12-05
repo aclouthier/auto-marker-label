@@ -177,7 +177,7 @@ def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=No
 
     '''
     t0 = time.time()
-
+ 
     # Read marker set
     markers, segment, uniqueSegs, segID, _, num_mks = import_markerSet(markersetpath)
     
@@ -185,7 +185,7 @@ def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=No
         # Import simulated trajectory data
         with open(datapath,'rb') as f:
             data_segs = pickle.load(f)
-            
+
         # Filter trajectories
         b, a = signal.butter(2,6,btype='low',fs=fs) # 2nd order, low-pass at 6 Hz 
         for i in range(len(data_segs)):
@@ -202,6 +202,8 @@ def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=No
         for i in range(len(data_segs)):
             for m in range(num_mks):
                 windowIdx.append([i,m,0,data_segs[i].shape[0]])
+                
+        max_len = max([len(x) for x in data_segs])
        
         print('Loaded simulated trajectory training data')
     else:
@@ -209,6 +211,8 @@ def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=No
         filelist = glob.glob(os.path.join(datapath,'*.c3d'))
         data_segs, windowIdx = import_labelled_c3ds(filelist,markers,
                                                         alignMkR,alignMkL,windowSize)
+        
+        max_len = max([x[3]-x[2] for x in windowIdx])
         
         print('Loaded c3ds files for training data')
     
@@ -699,7 +703,7 @@ def get_trainingVals(data_segs,uniqueSegs,segID):
     nDist = 0.0
     nVel = 0.0
     nAccn = 0.0
-    
+
     # Only use 2000 segments to save computing time
     if len(data_segs) > 2000:
         I = random.sample(range(len(data_segs)),2000)
@@ -1027,7 +1031,7 @@ def marker_label(pts,modelpath,trainvalpath,markersetpath,fs,windowSize):
         trainingvals = pickle.load(f)
     segdists = trainingvals['segdists']
     scaleVals = trainingvals['scaleVals']
-    max_len = 240 #trainingvals['max_len']
+    max_len = trainingvals['max_len']
     
     pts = np.array(pts,dtype=np.float64)
     
