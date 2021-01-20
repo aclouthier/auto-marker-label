@@ -25,7 +25,8 @@ torch==1.5.1
 If you do not have existing labelled motion capture data to train the algorithm, simulated trajectories can be generated. 
 
 If you have your own training data, skip this step.
-- First, the marker set to be used must be defined using an OpenSim marker set .xml file. 
+- Download the body segment kinematics used to generate the simulated trajectories here: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4293999.svg)](https://doi.org/10.5281/zenodo.4293999). Extract the .hdf5 file from the zip file and place it in the data folder.
+- Next, the marker set to be used must be defined using an OpenSim marker set .xml file. 
   - Install [OpenSim](https://simtk.org/frs/index.php?group_id=91)
   - In OpenSim, Open Model Rajagioa2015_mod.osim included in /data folder
   - Right click on Markers in the Navigator to add new marker. Marker can be selected and moved in the visualization. Set the marker's name and parent_frame (ie body segment it is attached to) in the Properties window.
