@@ -327,7 +327,7 @@ def transferLearning(savepath,datapath,modelpath,trainvalpath,markersetpath,
                 segdists['std'][bs][i,j] = segdists['std'][bs][j,i]
     segdists['nframes'] = segdists['nframes']+nframes
     
-    training_vals = {'segdists' : segdists, 'scaleVals' : scaleVals}
+    training_vals = {'segdists' : segdists, 'scaleVals' : scaleVals,'max_len' : max_len}
     with open(os.path.join(savepath,'trainingvals_plus' + str(len(filelist)) + 'trials_' + 
                            date.today().strftime("%Y-%m-%d") + '.pickle'),'wb') as f:
         pickle.dump(training_vals,f)
