@@ -9,10 +9,13 @@ This code has been tested using Python 3.7. The following packages are required 
 ```
 dash==1.14.0
 dash-bootstrap-components==0.10.3
+hdf5==1.10.4
+ipywidgets==7.5.1
 mydcc==0.1.22
 numpy==1.19.1
 pandas==1.0.5
 plotly==4.9.0
+scikit-learn==0.22.1
 scipy==1.5.2
 torch==1.5.1
 ```
