@@ -467,13 +467,16 @@ def window_data(data_segs,windowSize,num_mks):
                     while i1 <= i2:
                         if (i2 - (i1+windowSize) < 12) or (i1 + windowSize > i2):
                             if i2 - i1 > 0:
-                                windowIdx.append([t,m,i1,i2])
+                                # confirm that there are other markers visible in this window
+                                if (~np.isnan(np.concatenate((pts[i1:i2,0:m,:],pts[i1:i2,m+1:,:]),1))).sum() > 0:
+                                    windowIdx.append([t,m,i1,i2])
                             if  (~np.isnan(pts[i2:,m,0])).sum() > 1: # any more visible markers?
                                 i1 = i2 + np.where(~np.isnan(pts[i2:,m,0]))[0][0]
                             else: 
                                 i1 = pts.shape[0] + 1
                         else:
-                            windowIdx.append([t,m,i1,i1+windowSize])
+                            if (~np.isnan(np.concatenate((pts[i1:i2,0:m,:],pts[i1:i2,m+1:,:]),1))).sum() > 0:
+                                windowIdx.append([t,m,i1,i1+windowSize])
                             i1 = i1 + windowSize
     return windowIdx
 
