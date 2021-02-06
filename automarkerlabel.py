@@ -135,7 +135,7 @@ def generateSimTrajectories(bodykinpath,markersetpath,outputfile,alignMkR,alignM
     
     return data
 
-def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=None,windowSize=120,
+def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,min_loss=None,prevModel=None,windowSize=120,
                    alignMkR=None,alignMkL=None):
     '''
     Use this function to train the marker labelling algorithm on existing labelled 
@@ -155,6 +155,9 @@ def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=No
         Sampling frequency of training data.
     num_epochs : int, optional
         Number of epochs to train for. The default is 10.
+    min_loss : float, optional
+        Stop training when the epoch loss is smaller than this value. The default is None
+        (don't check)
     prevModel : string, optional
         Path to a .ckpt file of a previously trained neural network if using 
         transfer learning. Set to None if not using a previous model. 
@@ -226,7 +229,7 @@ def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=No
         pickle.dump(training_vals,f)
     
     net, running_loss = train_nn(data_segs,num_mks,max_len,windowIdx,
-                                        scaleVals,num_epochs,prevModel)
+                                        scaleVals,num_epochs,min_loss,prevModel)
         
     with open(os.path.join(savepath,'training_stats_' + date.today().strftime("%Y-%m-%d") + '.pickle'),'wb') as f:
         pickle.dump(running_loss,f)
@@ -237,7 +240,7 @@ def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=No
 
 
 def transferLearning(savepath,datapath,modelpath,trainvalpath,markersetpath,
-                     num_epochs=10,windowSize=120,alignMkR=None,alignMkL=None):
+                     num_epochs=10,min_loss=None,windowSize=120,alignMkR=None,alignMkL=None):
     '''
     Use this function to perform transfer learning. Requires a previously trained 
     model and labelled c3d files to add to training set.
@@ -258,6 +261,9 @@ def transferLearning(savepath,datapath,modelpath,trainvalpath,markersetpath,
         Path to .xml file of OpenSim marker set.
     num_epochs : int, optional
         Number of epochs to train for. The default is 10.
+    min_loss : float, optional
+        Stop training when the epoch loss is smaller than this value. The default is None
+        (don't check)
     windowSize : int, optional
         Size of windows used to segment data for algorithm. The default is 120.
     alignMkR : string, optional
@@ -291,7 +297,7 @@ def transferLearning(savepath,datapath,modelpath,trainvalpath,markersetpath,
     
     # Perform transfer learning
     net, running_loss = train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,
-                                        num_epochs,modelpath)
+                                        num_epochs,min_loss,modelpath)
       
             
     with open(os.path.join(savepath,'training_stats_plus' + str(len(filelist)) + 'trials_' + 
@@ -857,7 +863,7 @@ class Net(nn.Module):
         out = self.fc(out.view(out.shape[0],-1))
         return out
 
-def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,prevModel):
+def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,min_loss,prevModel):
     '''
     Train the neural network. 
     Will use GPU if available.
@@ -878,6 +884,9 @@ def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,prevModel)
        before inputting to neural network.
     num_epochs : int
         number of epoch to train for
+    min_loss : float, optional
+        Stop training when the epoch loss is smaller than this value. The default is None
+        (don't check)
     prevModel : string
         path to the .ckpt file for a previously trained model if using transfer 
         learning
@@ -934,6 +943,9 @@ def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,prevModel)
             if (i+1) % 10 == 0:
                 print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'.format(epoch+1,num_epochs,i+1,
                                                                          total_step,loss.item()))
+            if min_loss and loss.item()<=min_loss:
+                print('Loss <={} achieved, ending training'.format(min_loss))
+                return net, running_loss
     return net, running_loss
 
 def predict_nn(modelpath,pts,windowIdx,scaleVals,num_mks,max_len):

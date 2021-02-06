@@ -30,6 +30,7 @@ markersetpath = os.path.join(fld,'MarkerSet.xml')
 
 fs = 240 # Sampling frequency of training data
 num_epochs = 10 # Number of epochs to train for (default=10)
+min_loss = 0.05 # Minimum loss expected for each step (default=None)
 # Path to a .ckpt file of a previously trained neural network if using transfer learning.
 # Set to None if not using a previous model.
 prevModel = None 
@@ -42,5 +43,5 @@ alignMkL = 'LAC'
 # --------------------------------------------------------------------------- #
 
 # Run training
-aml.trainAlgorithm(fld,datapath,markersetpath,fs,num_epochs,prevModel,windowSize,
+aml.trainAlgorithm(fld,datapath,markersetpath,fs,num_epochs,min_loss,prevModel,windowSize,
                    alignMkR,alignMkL)
