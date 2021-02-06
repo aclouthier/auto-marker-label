@@ -10,27 +10,27 @@ training the algorithm, and automatic labelling.
 """
 
 
+import copy
+import glob
+import os
+import pickle
+import random
+import time
+import warnings
 import xml.dom.minidom
+from datetime import date
+
+import enlighten
+import h5py
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
-import pandas as pd
-from scipy import signal
-from scipy import stats
-from scipy.optimize import linear_sum_assignment  
-from scipy.interpolate import CubicSpline
-from sklearn.utils.extmath import weighted_mode
 from ezc3d import c3d
-import h5py
-import random
-import copy
-import pickle
-import warnings
-import glob
-import time
-from datetime import date
-import os
-
+from scipy import signal, stats
+from scipy.interpolate import CubicSpline
+from scipy.optimize import linear_sum_assignment
+from sklearn.utils.extmath import weighted_mode
 
 # Import parameters
 filtfreq = 6 # Cut off frequency for low-pass filter for marker trajectories
@@ -922,7 +922,15 @@ def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,min_loss,p
     # Train Network
     total_step = len(trainloader)
     running_loss = []
+
+    bar_format = r'{desc}{desc_pad}{percentage:3.0f}%|{bar}| {count:{len_total}d}/{total:d} [{elapsed}<{eta}, {interval:.2f} s/{unit} loss {loss:.4f}]'
+    manager = enlighten.get_manager(bar_format=bar_format)
+    epoch_count = manager.counter(total=num_epochs,desc="Epochs",unit="epoch",color="red",loss=0)
+    step_count = manager.counter(total=total_step,desc="Steps ",unit="step ",color="blue",loss=0)
+
     for epoch in range(num_epochs):
+        step_count.count=0
+        step_count.start=time.time()
         for i, (data, labels, trials, data_lens) in enumerate(trainloader):
             data = data.to(device)
             labels = torch.LongTensor(labels)
@@ -939,13 +947,16 @@ def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,min_loss,p
             
             running_loss.append(loss.item())
             
-            # Print stats
+            # # Print stats
             if (i+1) % 10 == 0:
-                print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'.format(epoch+1,num_epochs,i+1,
-                                                                         total_step,loss.item()))
+                step_count.update(incr=10,loss=loss.item())
+            #     print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'.format(epoch+1,num_epochs,i+1,
+            #                                                              total_step,loss.item()))
             if min_loss and loss.item()<=min_loss:
                 print('Loss <={} achieved, ending training'.format(min_loss))
                 return net, running_loss
+        epoch_count.update(loss=loss.item())
+    manager.stop()
     return net, running_loss
 
 def predict_nn(modelpath,pts,windowIdx,scaleVals,num_mks,max_len):
