@@ -14,6 +14,7 @@ import automarkerlabel as aml
 # ---------------------------- INPUT PARAMETERS ----------------------------- #
 
 num_epochs = 10 # Number of epochs to train for
+min_loss = 0.05 # Minimum loss expected for each step (default=None)
 # Path for save location of trained model
 fld = os.path.join('.','data')
 # Path to folder containing labelled .c3d files to add to training set
@@ -34,5 +35,5 @@ alignMkL = 'LAC'
 
 
 aml.transferLearning(fld,datapath,modelpath,trainvalpath,markersetpath,num_epochs,
-                 windowSize,alignMkR,alignMkL)
+                 min_loss,windowSize,alignMkR,alignMkL)
 
