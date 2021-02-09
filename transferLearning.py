@@ -30,9 +30,17 @@ windowSize = 120 # size of windows used to segment data for algorithm
 alignMkR = 'RAC'
 alignMkL = 'LAC'
 
+# Path to .ckpt file where training progress will be saved after each epoch. Set to None 
+# to only save model once training is complete
+tempCkpt = None
+# Flag to continue partially completed training from the .ckpt file located at tempCkpt
+# Set to True if you want to continue a partially completed training
+contFromTemp = False
+
+
 # --------------------------------------------------------------------------- #
 
 
 aml.transferLearning(fld,datapath,modelpath,trainvalpath,markersetpath,num_epochs,
-                 windowSize,alignMkR,alignMkL)
+                 windowSize,alignMkR,alignMkL,tempCkpt,contFromTemp)
 

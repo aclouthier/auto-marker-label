@@ -34,6 +34,13 @@ num_epochs = 10 # Number of epochs to train for (default=10)
 # Set to None if not using a previous model.
 prevModel = None 
 
+# Path to .ckpt file where training progress will be saved after each epoch. Set to None 
+# to only save model once training is complete
+tempCkpt = None
+# Flag to continue partially completed training from the .ckpt file located at tempCkpt
+# Set to True if you want to continue a partially completed training
+contFromTemp = False
+
 # --- Parameters required if using existing labelled c3ds as training data --- #
 windowSize = 120  # Desired size of data windows (default=120)
 # Markers to use to align person such that they face +x. Suggest acromions or pelvis markers.
@@ -43,4 +50,4 @@ alignMkL = 'LAC'
 
 # Run training
 aml.trainAlgorithm(fld,datapath,markersetpath,fs,num_epochs,prevModel,windowSize,
-                   alignMkR,alignMkL)
+                   alignMkR,alignMkL,tempCkpt,contFromTemp)

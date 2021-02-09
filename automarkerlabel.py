@@ -136,7 +136,7 @@ def generateSimTrajectories(bodykinpath,markersetpath,outputfile,alignMkR,alignM
     return data
 
 def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=None,windowSize=120,
-                   alignMkR=None,alignMkL=None):
+                   alignMkR=None,alignMkL=None,tempCkpt=None,contFromTemp=False):
     '''
     Use this function to train the marker labelling algorithm on existing labelled 
     c3d files or simulated marker trajectories created using 
@@ -170,6 +170,12 @@ def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=No
         Markers to use to align person such that they face +x. This is for the left side.
         Suggest acromions or pelvis markers. Not required if using simulated trajectories
         to train. The default is None.
+    tempCkpt : string, optional
+        Path to save a temporary .ckpt file of training progress after each epoch.
+        Set to None to only save model when training completes
+    contFromTemp : boolean, optional
+        Set to True to continue progress from partially completed training .ckpt file
+        at tempCkpt
 
     Returns
     -------
@@ -226,7 +232,7 @@ def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=No
         pickle.dump(training_vals,f)
     
     net, running_loss = train_nn(data_segs,num_mks,max_len,windowIdx,
-                                        scaleVals,num_epochs,prevModel)
+                                        scaleVals,num_epochs,prevModel,tempCkpt,contFromTemp)
         
     with open(os.path.join(savepath,'training_stats_' + date.today().strftime("%Y-%m-%d") + '.pickle'),'wb') as f:
         pickle.dump(running_loss,f)
@@ -237,7 +243,8 @@ def trainAlgorithm(savepath,datapath,markersetpath,fs,num_epochs=10,prevModel=No
 
 
 def transferLearning(savepath,datapath,modelpath,trainvalpath,markersetpath,
-                     num_epochs=10,windowSize=120,alignMkR=None,alignMkL=None):
+                     num_epochs=10,windowSize=120,alignMkR=None,alignMkL=None,
+                     tempCkpt=None,contFromTemp=False):
     '''
     Use this function to perform transfer learning. Requires a previously trained 
     model and labelled c3d files to add to training set.
@@ -266,6 +273,12 @@ def transferLearning(savepath,datapath,modelpath,trainvalpath,markersetpath,
     alignMkL : string, optional
         Markers to use to align person such that they face +x. This is for the left side.
         Suggest acromions or pelvis markers. The default is None (ie. no alignment).
+    tempCkpt : string, optional
+        Path to save a temporary .ckpt file of training progress after each epoch.
+        Set to None to only save model when training completes
+    contFromTemp : boolean, optional
+        Set to True to continue progress from partially completed training .ckpt file
+        at tempCkpt
 
     Returns
     -------
@@ -291,7 +304,7 @@ def transferLearning(savepath,datapath,modelpath,trainvalpath,markersetpath,
     
     # Perform transfer learning
     net, running_loss = train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,
-                                        num_epochs,modelpath)
+                                        num_epochs,modelpath,tempCkpt,contFromTemp)
       
             
     with open(os.path.join(savepath,'training_stats_plus' + str(len(filelist)) + 'trials_' + 
@@ -857,7 +870,8 @@ class Net(nn.Module):
         out = self.fc(out.view(out.shape[0],-1))
         return out
 
-def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,prevModel):
+def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,prevModel,
+             tempCkpt=None,contFromTemp=False):
     '''
     Train the neural network. 
     Will use GPU if available.
@@ -882,6 +896,11 @@ def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,prevModel)
         path to the .ckpt file for a previously trained model if using transfer 
         learning
         set to None if not using transfer learning
+    tempCkpt : string
+        path to save model training progress after each epoch .ckpt 
+        Set to None to only save after training completes
+    contFromTemp : boolean
+        set to True to continue a partially completed training from the tempCkpt file
 
     Returns
     -------
@@ -910,10 +929,22 @@ def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,prevModel)
     criterion = nn.CrossEntropyLoss()
     optimizer= torch.optim.SGD(net.parameters(), lr=lr, momentum=momentum)
     
+    # Load a partially trained model to complete training
+    if contFromTemp == True:
+        checkpoint = torch.load(tempCkpt)
+        net.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        epoch0 = checkpoint['epoch']
+        running_loss = checkpoint['running_loss']
+        loss = checkpoint['loss']
+        torch.set_rng_state(checkpoint['rng_state'])
+    else:
+        epoch0 = 0
+        running_loss = []
+        
     # Train Network
     total_step = len(trainloader)
-    running_loss = []
-    for epoch in range(num_epochs):
+    for epoch in range(epoch0,num_epochs):
         for i, (data, labels, trials, data_lens) in enumerate(trainloader):
             data = data.to(device)
             labels = torch.LongTensor(labels)
@@ -934,6 +965,11 @@ def train_nn(data_segs,num_mks,max_len,windowIdx,scaleVals,num_epochs,prevModel)
             if (i+1) % 10 == 0:
                 print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'.format(epoch+1,num_epochs,i+1,
                                                                          total_step,loss.item()))
+        if tempCkpt is not None:
+            torch.save({'epoch': epoch+1,'model_state_dict': net.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),'running_loss': running_loss,'loss' : loss,
+                'rng_state': torch.get_rng_state()},tempCkpt)
+        
     return net, running_loss
 
 def predict_nn(modelpath,pts,windowIdx,scaleVals,num_mks,max_len):
