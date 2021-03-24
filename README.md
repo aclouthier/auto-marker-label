@@ -1,6 +1,10 @@
-# An Open Source Algorithm for the Automatic Labelling of Motion Capture Markers using Deep Learning
+# An Open-Source Platform for the Automatic Labelling of Motion Capture Markers using Deep Learning
 
 An algorithm that uses machine learning to automatically label optical motion capture markers. The algorithm can be trained on existing data or simulated marker trajectories. Data and code is provided to generate the simulated trajectories for custom marker sets.
+
+Please cite:
+
+A. L. Clouthier, G. B. Ross, M. P. Mavor, I. Coll, A. Boyle and R. B. Graham, "Development and Validation of a Deep Learning Algorithm and Open-Source Platform for the Automatic Labelling of Motion Capture Markers," in IEEE Access, doi: [10.1109/ACCESS.2021.3062748](https://doi.org/10.1109/ACCESS.2021.3062748).
  
 ![Marker Labelling GUI](/images/auto-marker-label-GUI.jpg) 
  
