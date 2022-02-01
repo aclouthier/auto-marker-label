@@ -421,8 +421,8 @@ def label_data(n_clicks, pts, fs, rawlabels, filename):
 
 # Marker label modifier
 @app.callback([Output('message_mod','children'),Output('labels_updated','children'), Output('mod_timestamp', 'children')],
-              [Input('submit-button','n_clicks'), Input('labels_current', 'children')],
-              [State('marker_ind', 'value'),State('new_name', 'value'), State('split_timestamp', 'children'), State('mod_timestamp', 'children')])
+              [Input('submit-button','n_clicks')],
+              [State('labels_current', 'children'),State('marker_ind', 'value'),State('new_name', 'value'), State('split_timestamp', 'children'), State('mod_timestamp', 'children')])
 
 def name_mod(n_clicks, labels, marker_ind, new_name, split_timestamp, mod_timestamp):
     
