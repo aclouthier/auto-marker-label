@@ -596,6 +596,8 @@ def import_raw_c3d(file,rotang):
     c3ddat = c3d(file) # read in c3d file
     rawpts = c3ddat['data']['points'][0:3,:,:].transpose((2,1,0)) # Get points from c3d file
     fs = c3ddat['parameters']['POINT']['RATE']['value'] # sampling frequency
+    if isinstance(fs,(list,tuple,np.ndarray)):
+        fs = fs[0] 
     rawlabels = c3ddat['parameters']['POINT']['LABELS']['value']
     
     # # Try to find and fix places where the markers swap indices
@@ -1357,18 +1359,20 @@ def marker_label(pts,modelpath,trainvalpath,markersetpath,fs,windowSize):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
         d_proposed = np.nanmean(d_frame_proposed,axis=0)
+    if y_pred_proposed.ndim == 2: # old version of mode() output a 2D matrix
+        y_pred_proposed = y_pred_proposed[0]    
     # Go though proposed new labels and see if those will cause overlapping labels
-    for m in np.where(~np.isnan(y_pred_proposed[0]))[0]:
-        I = Y_pred==int(y_pred_proposed[0][m])
+    for m in np.where(~np.isnan(y_pred_proposed))[0]:
+        I = Y_pred==int(y_pred_proposed[m])
         I[m] = True
         # Make sure this label isn't already used for these frames
         visible = (~np.isnan(pts[:,I,0]))
         if ~(visible.sum(1) > 1).any():
             if Y_pred[m] == -1:
-                Y_pred[m] = int(y_pred_proposed[0][m])
+                Y_pred[m] = int(y_pred_proposed[m])
             elif d_proposed[m] < 30:
                 # Only overwrite an existing label if distance is <30mm
-                Y_pred[m] = int(y_pred_proposed[0][m])
+                Y_pred[m] = int(y_pred_proposed[m])
 
     # Get find predicted marker labels
     labels_predicted = []
