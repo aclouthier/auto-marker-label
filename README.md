@@ -9,23 +9,23 @@ A. L. Clouthier, G. B. Ross, M. P. Mavor, I. Coll, A. Boyle and R. B. Graham, "D
 ![Marker Labelling GUI](/images/auto-marker-label-GUI.jpg) 
  
 ## Installation
-This code has been tested using Python 3.7. The following packages are required and can be installed using pip. The version used in testing is listed. See requirements.txt for the full list of versions tested.
+This code has been tested using Python 3.12. The following packages are required and can be installed using pip. The version used in testing is listed. See requirements.txt for the full list of versions tested.
 ```
-dash==1.14.0
-dash-bootstrap-components==0.10.3
-hdf5==1.10.4
-ipywidgets==7.5.1
+dash==2.18.2
+dash-bootstrap-components==1.7.1
+dash-core-components==2.0.0
+dash-html-components==2.0.0
+ezc3d==1.5.18
+h5py==3.13.0
+ipywidgets==8.1.5
 mydcc==0.1.22
-numpy==1.19.1
-pandas==1.0.5
-plotly==4.9.0
-scikit-learn==0.22.1
-scipy==1.5.2
-torch==1.5.1
+numpy==2.2.2
+pandas==2.2.3
+plotly==5.24.1
+scikit-learn==1.6.1
+scipy==1.15.1
+torch==2.5.1
 ```
-[ezc3d](https://github.com/pyomeca/ezc3d) is also required and can be installed using conda
-
-`conda install -c conda-forge ezc3d`
 
 ## Use
 ### Generate Simulated Trajectories
